@@ -157,8 +157,8 @@ function startSoloTest(){
   document.querySelector('.joinSub').textContent='테스트 모드입니다. 소속과 이름을 입력하고 오리를 꾸며보세요.';
   joinBtn.textContent='🦆 테스트 출전하기';
   joinBtn.onclick=()=>{
-    if(!org.value.trim()||!name.value.trim()){showErr('소속과 이름을 입력해주세요.');return}
-    document.querySelector('.joinCard').innerHTML='<div class="joinedDone"><div class="big">✅🦆</div><h2>'+escapeHtml(name.value)+'님 테스트 출전 완료!</h2><div style="display:flex;justify-content:center;margin:20px 0">'+duckHTML(selectedColor,selectedAcc)+'</div><div class="waitMsg">캐릭터 설정이 정상적으로 적용됐습니다.</div><button class="joinBtn" style="margin-top:18px" onclick="location.reload()">처음으로 돌아가기</button></div>';
+    if(!document.getElementById('org').value.trim()||!document.getElementById('name').value.trim()){showErr('소속과 이름을 입력해주세요.');return}
+    document.querySelector('.joinCard').innerHTML='<div class="joinedDone"><div class="big">✅🦆</div><h2>'+escapeHtml(document.getElementById('name').value)+'님 테스트 출전 완료!</h2><div style="display:flex;justify-content:center;margin:20px 0">'+duckHTML(selectedColor,selectedAcc)+'</div><div class="waitMsg">캐릭터 설정이 정상적으로 적용됐습니다.</div><button class="joinBtn" style="margin-top:18px" onclick="location.reload()">처음으로 돌아가기</button></div>';
   };
 }
 function startHost(){
@@ -196,16 +196,16 @@ function startJoiner(id){
   p.on('open',()=>{conn=p.connect(id,{reliable:true});
     conn.on('data',d=>{
       if(d.type==='accepted'){
-        const nm=escapeHtml(name.value||'참가자');
+        const nm=escapeHtml(document.getElementById('name').value||'참가자');
         document.querySelector('.joinCard').innerHTML='<div class="joinedDone"><div class="big">✅🦆</div><h2>'+nm+'님 출전 완료!</h2><div style="display:flex;justify-content:center;margin:20px 0">'+duckHTML(selectedColor,selectedAcc)+'</div><div class="waitMsg">앞 화면에서 레이스가 시작될 때까지 기다려주세요.</div></div>';
       }else if(d.type==='duplicate'){showErr('이미 같은 소속/이름으로 참가되어 있습니다.')}
       else if(d.type==='closed'){showErr('이미 레이스가 시작되었습니다.')}
     });
   });
   joinBtn.onclick=()=>{
-    if(!org.value.trim()||!name.value.trim()){showErr('소속과 이름을 입력해주세요.');return}
+    if(!document.getElementById('org').value.trim()||!document.getElementById('name').value.trim()){showErr('소속과 이름을 입력해주세요.');return}
     if(!conn||!conn.open){showErr('방장 화면과 연결 중입니다. 잠시 후 다시 눌러주세요.');return}
-    conn.send({type:'join',org:org.value.trim(),name:name.value.trim(),color:selectedColor,acc:selectedAcc});
+    conn.send({type:'join',org:document.getElementById('org').value.trim(),name:document.getElementById('name').value.trim(),color:selectedColor,acc:selectedAcc});
   };
 }
 function showErr(t){joinError.textContent=t;joinError.classList.remove('hidden')}
