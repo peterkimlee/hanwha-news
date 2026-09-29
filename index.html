@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>행운의 오리 레이스</title>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#17324d}
+body{background:linear-gradient(#cff2ff 0 56%,#7fd1ef 56% 100%);overflow:hidden}
+button,input{font:inherit}.hidden{display:none!important}
+.center{display:flex;align-items:center;justify-content:center}.screen{width:100%;height:100%;position:relative}
+.card{background:rgba(255,255,255,.95);border-radius:28px;box-shadow:0 18px 50px rgba(23,65,92,.18)}
+#hostLobby{padding:28px;display:grid;grid-template-columns:1fr 420px;gap:24px;align-items:center}
+.title{font-size:clamp(42px,6vw,86px);font-weight:1000;letter-spacing:-4px;line-height:.95;margin:0}
+.sub{font-size:24px;margin:18px 0;color:#557086}
+.instructions{font-size:21px;line-height:1.65}
+.qrCard{padding:26px;text-align:center}.qrCard h2{font-size:30px;margin:0 0 14px}
+#qrcode{display:flex;justify-content:center}#qrcode img,#qrcode canvas{width:300px!important;height:300px!important;background:#fff;padding:8px;border-radius:18px}
+.count{font-size:64px;font-weight:1000;color:#f38b00}.joined{font-size:21px;font-weight:900}
+.startBtn{border:0;background:#ffca3a;color:#3b2d00;border-radius:20px;padding:18px 28px;font-size:28px;font-weight:1000;cursor:pointer;box-shadow:0 8px 0 #d99f00}
+.startBtn:active{transform:translateY(5px);box-shadow:0 3px 0 #d99f00}.startBtn[disabled]{opacity:.45;cursor:not-allowed}
+.people{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;max-height:150px;overflow:auto}.pill{background:#fff;border:1px solid #d9e8ef;border-radius:999px;padding:8px 12px;font-weight:800}
+.hint{margin-top:12px;font-size:13px;color:#718391;word-break:break-all}
+.track{position:absolute;inset:0;background:linear-gradient(#bfeeff 0 8%,#76d0f1 8% 92%,#8fd26d 92%);overflow:hidden}
+.trackTop{position:absolute;left:0;right:0;top:0;height:64px;background:#69b850;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:24px;font-weight:1000;z-index:4}
+.lanes{position:absolute;top:64px;bottom:0;left:0;right:0;padding:10px 120px 10px 28px}
+.lane{position:relative;height:var(--lane-h);border-bottom:2px dashed rgba(255,255,255,.35)}
+.finish{position:absolute;right:86px;top:64px;bottom:0;width:28px;background:repeating-conic-gradient(#fff 0 25%,#222 0 50%) 0/22px 22px;z-index:2}
+.finishLabel{position:absolute;right:46px;top:74px;background:white;padding:8px 12px;border-radius:12px;font-weight:1000;z-index:3}
+.racer{position:absolute;left:12px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:10px;will-change:left}
+.nameTag{background:white;border-radius:12px;padding:6px 10px;font-weight:1000;box-shadow:0 3px 10px rgba(0,0,0,.12);white-space:nowrap}
+.duck{position:relative;width:58px;height:46px}
+.duck .body{position:absolute;width:42px;height:30px;left:12px;top:14px;background:var(--duck);border-radius:60% 55% 50% 55%;box-shadow:inset -5px -4px 0 rgba(0,0,0,.07)}
+.duck .head{position:absolute;width:27px;height:27px;left:0;top:2px;background:var(--duck);border-radius:50%}
+.duck .eye{position:absolute;width:5px;height:5px;left:14px;top:9px;background:#222;border-radius:50%}
+.duck .beak{position:absolute;width:16px;height:8px;left:-9px;top:15px;background:#ff9f1c;border-radius:60% 0 0 60%}
+.duck .wing{position:absolute;width:20px;height:13px;left:26px;top:22px;background:rgba(255,255,255,.35);border-radius:50%;transform:rotate(-18deg)}
+.acc{position:absolute;z-index:5}.hat{left:2px;top:-7px;font-size:22px}.glasses{left:5px;top:9px;font-size:18px}.crown{left:1px;top:-10px;font-size:22px}.ribbon{left:27px;top:2px;font-size:18px}.headphones{left:2px;top:-4px;font-size:22px}
+#winnerOverlay{position:absolute;inset:0;background:rgba(6,31,48,.88);z-index:10;color:#fff;display:flex;align-items:center;justify-content:center;padding:30px}
+.winnerCard{width:min(1100px,92vw);background:white;color:#17324d;border-radius:32px;padding:34px;text-align:center}
+.winnerCard h1{font-size:58px;margin:0 0 22px}.wgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.win{background:#f5fbff;border-radius:22px;padding:20px}.rank{font-size:48px}.winName{font-size:24px;font-weight:1000}.winOrg{color:#688091;font-weight:700;margin-top:5px}
+.again{margin-top:24px;border:0;border-radius:16px;padding:14px 22px;font-size:20px;font-weight:900;background:#ffca3a}
+#joinScreen{padding:18px;overflow:auto;background:linear-gradient(#dff7ff,#fff7c7);min-height:100%}.joinCard{max-width:560px;margin:12px auto;padding:24px}.joinTitle{text-align:center;font-size:34px;font-weight:1000;margin:0 0 5px}.joinSub{text-align:center;color:#69808f;margin-bottom:20px}
+label{display:block;font-weight:900;margin:14px 0 7px}input{width:100%;padding:15px 16px;border:2px solid #d9e7ed;border-radius:14px;font-size:18px;outline:none}input:focus{border-color:#64c7ef}
+.optionRow{display:flex;gap:10px;flex-wrap:wrap}.opt{border:3px solid transparent;border-radius:16px;padding:8px;background:#f4f8fa;cursor:pointer;min-width:58px;text-align:center}.opt.sel{border-color:#ffb703;background:#fff8d9}.swatch{width:36px;height:36px;border-radius:50%;margin:auto}
+.preview{height:120px;display:flex;align-items:center;justify-content:center;background:#eaf8ff;border-radius:18px;margin:14px 0}.preview .duck{transform:scale(1.65)}
+.joinBtn{width:100%;border:0;background:#ffca3a;border-radius:16px;padding:17px;font-size:22px;font-weight:1000;margin-top:20px}
+.joinedDone{text-align:center;padding:30px}.joinedDone .big{font-size:68px}
+.waitMsg{margin-top:16px;background:#eefaff;padding:14px;border-radius:14px;font-weight:800}
+.error{background:#fff0f2;color:#a92d43;padding:12px;border-radius:12px;margin-top:12px;font-weight:800}
+@media(max-width:900px){#hostLobby{grid-template-columns:1fr;padding:18px;overflow:auto}.qrCard{padding:18px}.title{font-size:48px}.instructions{font-size:18px}.wgrid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div id="modeScreen" class="screen center" style="padding:24px;background:linear-gradient(#dff7ff,#fff4bf)">
+  <div class="card" style="width:min(760px,92vw);padding:34px;text-align:center">
+    <div style="font-size:82px">🦆</div>
+    <h1 style="font-size:52px;margin:0 0 8px">행운의 오리 레이스</h1>
+    <p style="font-size:20px;color:#668093;margin-bottom:28px">행사 진행자는 방장으로 시작하세요.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <button id="hostModeBtn" class="startBtn" style="font-size:22px;padding:20px">🎤 방장으로 시작</button>
+      <button id="testModeBtn" class="startBtn" style="font-size:22px;padding:20px;background:#9be15d;box-shadow:0 8px 0 #6eaf37">🧪 참가자로 테스트</button>
+    </div>
+    <div style="margin-top:14px;font-size:14px;color:#7b8d99">실제 행사 때는 방장으로 시작 → 화면의 QR만 공유하면 됩니다.</div>
+  </div>
+</div>
+
+<div id="hostScreen" class="screen hidden">
+  <section id="hostLobby" class="screen">
+    <div>
+      <div class="card" style="padding:30px">
+        <h1 class="title">🦆 행운의<br>오리 레이스</h1>
+        <p class="sub">QR 찍고 내 오리를 꾸민 뒤 출전!</p>
+        <div class="instructions">
+          ① QR을 찍고 <b>소속 + 이름</b> 입력<br>
+          ② 오리 <b>색상 + 액세서리</b> 선택<br>
+          ③ 모두 들어오면 <b>START</b><br>
+          ④ 결승선을 먼저 통과한 <b>상위 4명 당첨!</b>
+        </div>
+        <div class="people" id="people"></div>
+      </div>
+    </div>
+    <div class="card qrCard">
+      <h2>📱 QR 찍고 참가하세요</h2>
+      <div id="qrcode"></div>
+      <div class="joined"><span class="count" id="count">0</span>명 참가</div>
+      <button class="startBtn" id="startBtn" disabled>🏁 레이스 START</button>
+      <div class="hint" id="joinUrl"></div>
+    </div>
+  </section>
+
+  <section id="raceScreen" class="track hidden">
+    <div class="trackTop"><span>🦆 LUCKY DUCK RACE</span><span>먼저 들어오는 4명이 당첨!</span></div>
+    <div class="finish"></div><div class="finishLabel">🏁 FINISH</div>
+    <div class="lanes" id="lanes"></div>
+    <div id="winnerOverlay" class="hidden">
+      <div class="winnerCard">
+        <h1>🎉 오늘의 행운의 4명</h1>
+        <div class="wgrid" id="winners"></div>
+        <button class="again" onclick="location.reload()">처음부터 다시</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="joinScreen" class="hidden">
+  <div class="card joinCard">
+    <h1 class="joinTitle">🦆 내 오리 출전시키기</h1>
+    <div class="joinSub">소속과 이름을 입력하고 오리를 꾸며주세요.</div>
+    <label>소속</label><input id="org" placeholder="예: 순천GA지점" maxlength="30">
+    <label>이름</label><input id="name" placeholder="예: 이규호" maxlength="20">
+    <label>오리 색상</label><div class="optionRow" id="colors"></div>
+    <label>액세서리</label><div class="optionRow" id="accs"></div>
+    <div class="preview"><div id="previewDuck"></div></div>
+    <button class="joinBtn" id="joinBtn">🦆 출전하기</button>
+    <div id="joinError" class="error hidden"></div>
+  </div>
+</div>
+
+<script>
+const COLORS=[
+  {n:'노랑',v:'#ffd84d'},{n:'핑크',v:'#ff8fab'},{n:'민트',v:'#76d7c4'},
+  {n:'하늘',v:'#74c0fc'},{n:'보라',v:'#b197fc'},{n:'주황',v:'#ffa94d'}
+];
+const ACCS=[
+  {n:'없음',k:'none',e:'—'},{n:'모자',k:'hat',e:'🎩'},{n:'선글라스',k:'glasses',e:'🕶️'},
+  {n:'왕관',k:'crown',e:'👑'},{n:'리본',k:'ribbon',e:'🎀'},{n:'헤드폰',k:'headphones',e:'🎧'}
+];
+let selectedColor=COLORS[0].v, selectedAcc='none';
+let participants=[], conns=[], peer=null, racing=false;
+
+function duckHTML(color,acc){
+  const a=ACCS.find(x=>x.k===acc);
+  return '<div class="duck" style="--duck:'+color+'"><div class="body"></div><div class="head"></div><div class="eye"></div><div class="beak"></div><div class="wing"></div>'+(acc!=='none'?'<div class="acc '+acc+'">'+a.e+'</div>':'')+'</div>';
+}
+function setupOptions(){
+  colors.innerHTML=COLORS.map((c,i)=>'<button class="opt '+(i===0?'sel':'')+'" data-color="'+c.v+'" title="'+c.n+'"><div class="swatch" style="background:'+c.v+'"></div></button>').join('');
+  accs.innerHTML=ACCS.map((a,i)=>'<button class="opt '+(i===0?'sel':'')+'" data-acc="'+a.k+'" title="'+a.n+'">'+a.e+'<div style="font-size:11px;margin-top:2px">'+a.n+'</div></button>').join('');
+  colors.onclick=e=>{const b=e.target.closest('[data-color]');if(!b)return;selectedColor=b.dataset.color;[...colors.children].forEach(x=>x.classList.remove('sel'));b.classList.add('sel');updatePreview()};
+  accs.onclick=e=>{const b=e.target.closest('[data-acc]');if(!b)return;selectedAcc=b.dataset.acc;[...accs.children].forEach(x=>x.classList.remove('sel'));b.classList.add('sel');updatePreview()};
+  updatePreview();
+}
+function updatePreview(){previewDuck.innerHTML=duckHTML(selectedColor,selectedAcc)}
+
+const params=new URLSearchParams(location.search);
+const hostId=params.get('join');
+if(hostId){modeScreen.classList.add('hidden');startJoiner(hostId)}
+else{
+  hostModeBtn.onclick=()=>{modeScreen.classList.add('hidden');startHost()};
+  testModeBtn.onclick=()=>{modeScreen.classList.add('hidden');startSoloTest()};
+}
+
+function startSoloTest(){
+  joinScreen.classList.remove('hidden');setupOptions();
+  document.querySelector('.joinSub').textContent='테스트 모드입니다. 소속과 이름을 입력하고 오리를 꾸며보세요.';
+  joinBtn.textContent='🦆 테스트 출전하기';
+  joinBtn.onclick=()=>{
+    if(!org.value.trim()||!name.value.trim()){showErr('소속과 이름을 입력해주세요.');return}
+    document.querySelector('.joinCard').innerHTML='<div class="joinedDone"><div class="big">✅🦆</div><h2>'+escapeHtml(name.value)+'님 테스트 출전 완료!</h2><div style="display:flex;justify-content:center;margin:20px 0">'+duckHTML(selectedColor,selectedAcc)+'</div><div class="waitMsg">캐릭터 설정이 정상적으로 적용됐습니다.</div><button class="joinBtn" style="margin-top:18px" onclick="location.reload()">처음으로 돌아가기</button></div>';
+  };
+}
+function startHost(){
+  hostScreen.classList.remove('hidden');
+  peer=new Peer();
+  peer.on('open',id=>{
+    const base=location.href.split('?')[0].split('#')[0];
+    const url=base+'?join='+encodeURIComponent(id);
+    joinUrl.textContent=url;
+    new QRCode(document.getElementById('qrcode'),{text:url,width:300,height:300,correctLevel:QRCode.CorrectLevel.M});
+  });
+  peer.on('connection',conn=>{
+    if(racing){conn.on('open',()=>conn.send({type:'closed'}));return}
+    conns.push(conn);
+    conn.on('data',d=>{
+      if(!d||d.type!=='join'||racing)return;
+      const id=crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random());
+      const p={id,org:String(d.org||'').slice(0,30),name:String(d.name||'').slice(0,20),color:d.color||COLORS[0].v,acc:d.acc||'none'};
+      if(!p.org||!p.name)return;
+      if(participants.some(x=>x.org===p.org&&x.name===p.name)){conn.send({type:'duplicate'});return}
+      participants.push(p);conn.send({type:'accepted',id});renderLobby();
+    });
+  });
+}
+function renderLobby(){
+  count.textContent=participants.length;
+  people.innerHTML=participants.map(p=>'<span class="pill">'+escapeHtml(p.org)+' · '+escapeHtml(p.name)+'</span>').join('');
+  startBtn.disabled=participants.length<4;
+}
+startBtn.onclick=()=>{if(participants.length>=4)startRace()};
+
+function startJoiner(id){
+  joinScreen.classList.remove('hidden');setupOptions();
+  const p=new Peer();let conn;
+  p.on('open',()=>{conn=p.connect(id,{reliable:true});
+    conn.on('data',d=>{
+      if(d.type==='accepted'){
+        const nm=escapeHtml(name.value||'참가자');
+        document.querySelector('.joinCard').innerHTML='<div class="joinedDone"><div class="big">✅🦆</div><h2>'+nm+'님 출전 완료!</h2><div style="display:flex;justify-content:center;margin:20px 0">'+duckHTML(selectedColor,selectedAcc)+'</div><div class="waitMsg">앞 화면에서 레이스가 시작될 때까지 기다려주세요.</div></div>';
+      }else if(d.type==='duplicate'){showErr('이미 같은 소속/이름으로 참가되어 있습니다.')}
+      else if(d.type==='closed'){showErr('이미 레이스가 시작되었습니다.')}
+    });
+  });
+  joinBtn.onclick=()=>{
+    if(!org.value.trim()||!name.value.trim()){showErr('소속과 이름을 입력해주세요.');return}
+    if(!conn||!conn.open){showErr('방장 화면과 연결 중입니다. 잠시 후 다시 눌러주세요.');return}
+    conn.send({type:'join',org:org.value.trim(),name:name.value.trim(),color:selectedColor,acc:selectedAcc});
+  };
+}
+function showErr(t){joinError.textContent=t;joinError.classList.remove('hidden')}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function shuffled(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const r=new Uint32Array(1);crypto.getRandomValues(r);const j=r[0]%(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+function startRace(){
+  racing=true;hostLobby.classList.add('hidden');raceScreen.classList.remove('hidden');
+  const n=participants.length,laneH=Math.max(38,Math.min(74,(innerHeight-90)/n));
+  lanes.style.setProperty('--lane-h',laneH+'px');
+  lanes.innerHTML=participants.map((p,i)=>'<div class="lane"><div class="racer" id="r'+i+'">'+duckHTML(p.color,p.acc)+'<span class="nameTag">'+escapeHtml(p.name)+'<small style="display:block;color:#789;font-size:11px">'+escapeHtml(p.org)+'</small></span></div></div>').join('');
+  const order=shuffled(participants.map((_,i)=>i)),totalBase=9000,gap=190,finishTimes={};
+  order.forEach((idx,rank)=>finishTimes[idx]=totalBase+rank*gap);
+  const usable=()=>Math.max(300,innerWidth-310),start=performance.now();
+  function anim(now){
+    const elapsed=now-start;
+    participants.forEach((p,i)=>{const el=document.getElementById('r'+i),t=finishTimes[i],progress=Math.min(elapsed/t,1),wobble=(Math.sin(elapsed/240+i*1.73)+1)*0.012*(1-progress),x=Math.min(.998,progress+wobble)*usable();el.style.left=(12+x)+'px'});
+    if(elapsed<Math.max(...Object.values(finishTimes))+350)requestAnimationFrame(anim);else showWinners(order);
+  }
+  requestAnimationFrame(anim);
+}
+function showWinners(order){
+  const medals=['🥇','🥈','🥉','🏅'];
+  winners.innerHTML=order.slice(0,4).map((idx,r)=>{const p=participants[idx];return '<div class="win"><div class="rank">'+medals[r]+'</div>'+duckHTML(p.color,p.acc)+'<div class="winName">'+escapeHtml(p.name)+'</div><div class="winOrg">'+escapeHtml(p.org)+'</div></div>'}).join('');
+  winnerOverlay.classList.remove('hidden');
+}
+</script>
+</body>
+</html>
